@@ -9,10 +9,9 @@ int isHigh(int pin) {
 }
 
 int log_on_serial(int pin, char* msg, int state) {
-	lcd.setCursor(0, 0);
-	lcd.print(pin, DEC);
-	lcd.print(msg);
-	lcd.print(state, DEC);
+	Serial.print(pin, DEC);
+  Serial.print(msg);
+  Serial.println(state, DEC);
 }
 
 void readButton(int pin, int* state, int* prell_delay) {
