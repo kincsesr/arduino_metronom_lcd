@@ -6,8 +6,6 @@
 #include "state.h"
 #include "LiquidCrystal.h"
 
-LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
-
 #define NOTE_HIGH  392
 #define NOTE_LOW  196
 
@@ -27,19 +25,15 @@ long tempo = TEMPO;
 long fullNoteDuration = MINUTE / tempo;
 
 State state;
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
 
 void setup() {
-
-  //Serial.begin(9600);
+  
   // soros sebesseg
-  //Serial.println("Start...");
+  Serial.begin(9600);
+  
+  Serial.println("Start...");
   lcd.begin(16,2);
-
-  // initialize LEDs
-  //pinMode(tempoLedPinUp, OUTPUT);
-  //pinMode(tempoLedPinDown, OUTPUT);
-  //pinMode(rhythmLedPin, OUTPUT);
-  //pinMode(accentLedPin, OUTPUT);
 
   // initialize buttons;
   pinMode(onOffButtonPin, INPUT);
@@ -55,25 +49,9 @@ void setup() {
 void handle_tempoUp(State* state) {
   // ha lenyomtak a gombot, akkor felvillantjuk a LED-et
   if (state->tempoUp) {
-    lcd.setCursor(0, 0);
-    lcd.print("tempo up pressed");
-    //digitalWrite(tempoLedPinUp, HIGH);
-    delay(10);
-    state->prell_delay += 10;
-    //digitalWrite(tempoLedPinUp, LOW);
-
-    // visszaallitjuk az allapotot
-    state->tempoUp = 0;
-
     // noveljuk a tempot
     if (tempo < 200) {
       tempo += 5;
-      lcd.setCursor(0, 1);
-      lcd.print("tempo is ");
-      lcd.println(tempo);
-    } else {
-      lcd.setCursor(0, 1);
-      lcd.print("tempo reached maximum");
     }
   }
 }
@@ -81,25 +59,9 @@ void handle_tempoUp(State* state) {
 void handle_tempoDown(State* state) {
   // ha lenyomtak a gombot, akkor felvillantjuk a LED-et
   if (state->tempoDown) {
-    lcd.setCursor(0, 0);
-    lcd.print("tempo down pressed");
-    //digitalWrite(tempoLedPinDown, HIGH);
-    delay(10);
-    state->prell_delay += 10;
-    //digitalWrite(tempoLedPinDown, LOW);
-
-    // visszaallitjuk az allapotot
-    state->tempoDown = 0;
-
     // csokkentjuk a tempot
     if (tempo > 40) {
       tempo -= 5;
-      lcd.setCursor(0, 1);
-      lcd.print("tempo is ");
-      lcd.print(tempo);
-    } else {
-      lcd.setCursor(0, 1);
-      lcd.print("tempo reached minimum");
     }
   }
 }
@@ -139,10 +101,40 @@ void handle_enabled(State state) {
 
 }
 
-void loop() {
-  
+void print_state_on_lcd(State state) {
+  if (state.tempoUp) {
+    lcd.clear();
+    lcd.print("tempo up: ");
+    lcd.print(tempo);
 
-  state.prell_delay = 0;
+    lcd.setCursor(0, 1);
+
+    if (tempo == 200) {
+      lcd.print("max");
+    }
+  }
+  
+  if (state.tempoDown) {
+    lcd.clear();
+    lcd.print("tempo down: ");
+    lcd.print(tempo);
+
+    lcd.setCursor(0, 1);
+
+    if (tempo == 40) {
+      lcd.print("min");
+    }
+  }
+
+}
+
+void clear_state(State* state) {
+  state->prell_delay = 0;
+  state->tempoUp = 0;
+  state->tempoDown = 0; 
+}
+
+void loop() {
   get_state(&state);
 
   handle_tempoUp(&state);
@@ -151,5 +143,9 @@ void loop() {
   fullNoteDuration = MINUTE / tempo;
   
   handle_enabled(state);
+
+  print_state_on_lcd(state);
+
+  clear_state(&state);
 
 }
